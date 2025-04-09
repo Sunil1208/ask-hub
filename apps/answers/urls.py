@@ -1,11 +1,7 @@
 from django.urls import path
-from apps.answers.views import AnswerListCreateView, LikeToggleView
+from apps.answers.views import like_toggle
+
 
 urlpatterns = [
-    path(
-        "questions/<int:question_id>/",
-        AnswerListCreateView.as_view(),
-        name="answer_list_create",
-    ),
-    path("<int:answer_id>/like", LikeToggleView.as_view(), name="like_toggle"),
+    path("<int:answer_id>/like", like_toggle, name="like_toggle"),
 ]

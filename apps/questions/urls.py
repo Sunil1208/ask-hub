@@ -1,16 +1,12 @@
 from django.urls import path
 from apps.questions.views import (
-    QuestionListCreateView,
-    # QuestionRetrieveView,
-    # QuestionDeleteView,
-    QuestionRetrieveOrDeleteView,
+    home_view,
+    question_detail_view,
+    ask_question_view,
 )
 
 urlpatterns = [
-    path("", QuestionListCreateView.as_view(), name="question_list_create"),
-    path(
-        "<int:pk>/",
-        QuestionRetrieveOrDeleteView.as_view(),
-        name="question_retrieve_or_delete",
-    ),
+    path("", home_view, name="home"),
+    path("<int:pk>/", question_detail_view, name="question_detail"),
+    path("ask/", ask_question_view, name="ask_question"),
 ]

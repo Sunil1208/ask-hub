@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}{{ question.title }} - Ask Hub{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>{{ question.title }}</h2>
+    <p class="text-muted">{{ question.description }}</p>
+    <small class="text-secondary">
+        Asked by <strong>{{ question.user.username }}</strong> • {{ question.created_at|naturaltime }}
+    </small>
+</div>
+
+<hr>
+
+<h4 class="mb-3">Answers ({{ answers.count }})</h4>
+{% for ans in answers %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <p>{{ ans.content }}</p>
+            <div class="d-flex justify-content-between">
+                <small>By <strong>{{ ans.user.username }}</strong> • {{ ans.created_at|naturaltime }}</small>
+                <form method="post" action="{% url 'like_toggle' ans.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        ❤️ {{ ans.likes.count }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p class="text-muted">No answers yet. Be the first to answer!</p>
+{% endfor %}
+
+<hr>
+
+<h4 class="mb-3">Post Your Answer</h4>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit Answer</button>
+</form>
+
+{% endblock %}

@@ -1,44 +1,62 @@
-from django.shortcuts import render
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from apps.users.serializers import (
-    RegisterUserSerializer,
-    CustomTokenObtainPairSerializer,
-)
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+from apps.users.forms import CustomUserCreationForm, CustomLoginForm
+
+from django.contrib.auth import get_user_model
 
 
-class RegisterView(APIView):
-    def post(self, request):
-        serializer = RegisterUserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response(
-                {"message": "User created successfully", "user": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+User = get_user_model()
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+def register_view(request):
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, "Registration successful")
+            return redirect("login")
+        else:
+            print("Form errors: ", form.errors)
+    else:
+        form = CustomUserCreationForm()
+    return render(request, "users/register.html", {"form": form})
 
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+def login_view(request):
+    if request.method == "POST":
+        form = CustomLoginForm(request=request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, "Login successful")
+            return redirect("home")
+    else:
+        form = CustomLoginForm()
+    return render(request, "users/login.html", {"form": form})
 
-    def post(self, request):
-        try:
-            refresh_token = request.data["refresh-token"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(
-            {"message": "Logged out successfully"}, status=status.HTTP_200_OK
-        )
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out")
+    return redirect("login")
+
+
+@login_required
+def profile_view(request):
+    user = request.user
+    questions = user.questions.all().order_by("-created_at")
+    answers = user.answers.all().select_related("question").order_by("-created_at")
+
+    return render(
+        request,
+        "users/profile.html",
+        {
+            "user_obj": user,
+            "questions": questions,
+            "answers": answers,
+        },
+    )
