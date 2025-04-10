@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 from apps.users.forms import CustomUserCreationForm, CustomLoginForm
 
@@ -48,7 +49,9 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     user = request.user
-    questions = user.questions.all().order_by("-created_at")
+    questions = user.questions.annotate(answer_count=Count("answers")).order_by(
+        "-created_at"
+    )
     answers = user.answers.all().select_related("question").order_by("-created_at")
 
     return render(
