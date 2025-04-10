@@ -11,7 +11,13 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def home_view(request):
     questions = Question.objects.all().order_by("-created_at")
-    return render(request, "questions/home.html", {"questions": questions})
+
+    # PAGINATE
+    paginator = Paginator(questions, 10)  # show 10 questions per page
+    page_number = request.GET.get("page")
+    paginated_questions = paginator.get_page(page_number)
+
+    return render(request, "questions/home.html", {"questions": paginated_questions})
 
 
 @login_required
