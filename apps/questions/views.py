@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from apps.answers.forms import AnswerForm
 from django.contrib import messages
 from apps.questions.forms import QuestionForm
+from django.core.paginator import Paginator
 
 from django.contrib.auth.decorators import login_required
 
@@ -16,10 +17,15 @@ def home_view(request):
 @login_required
 def question_detail_view(request, pk):
     question = get_object_or_404(Question, pk=pk)
-    answers = question.answers.select_related("user").order_by("-created_at")
+    answers_qs = question.answers.select_related("user").order_by("-created_at")
 
-    if request.method == "POST":
-        form = AnswerForm(request.POST)
+    # PAGINATE
+    paginator = Paginator(answers_qs, 10)  # show 10 answers per page
+    page_number = request.GET.get("page")
+    answers = paginator.get_page(page_number)
+
+    form = AnswerForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
         if form.is_valid():
             answer = form.save(commit=False)
             answer.question = question
