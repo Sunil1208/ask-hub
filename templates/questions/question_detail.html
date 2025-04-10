@@ -24,15 +24,25 @@
                 <small>By <strong>{{ ans.user.username }}</strong> • {{ ans.created_at|naturaltime }}</small>
                 <form method="post" action="{% url 'like_toggle' ans.id %}">
                     {% csrf_token %}
+                    {% if user.is_authenticated %}
                     <button type="submit" class="btn btn-sm btn-outline-danger">
                         ❤️ {{ ans.likes.count }}
                     </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" disabled title="Login to like">
+                        ❤️ {{ ans.likes.count }}
+                    </button>
+                    {% endif %}
                 </form>
             </div>
         </div>
     </div>
 {% empty %}
-    <p class="text-muted">No answers yet. Be the first to answer!</p>
+    <p class="text-muted">No answers yet.
+        {% if user.is_authenticated %}
+        <span>Be the first to answer!</span>
+        {% endif %}
+    </p>
 {% endfor %}
 
 {% if answers.has_other_pages %}
@@ -62,11 +72,16 @@
 
 <hr>
 
+<!-- Post Answer Form-->
 <h4 class="mb-3">Post Your Answer</h4>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Submit Answer</button>
-</form>
+{% if user.is_authenticated %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit Answer</button>
+    </form>
+{% else %}
+    <p class="text-muted">Login to post an answer.</p>
+{% endif %}
 
 {% endblock %}

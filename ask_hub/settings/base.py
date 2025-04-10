@@ -189,3 +189,5 @@ logging.config.dictConfig(
         },
     }
 )
+
+LOGIN_URL = "/auth/login"

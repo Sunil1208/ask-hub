@@ -9,7 +9,6 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
 def home_view(request):
     questions = Question.objects.annotate(answer_count=Count("answers")).order_by(
         "-created_at"
@@ -23,7 +22,6 @@ def home_view(request):
     return render(request, "questions/home.html", {"questions": paginated_questions})
 
 
-@login_required
 def question_detail_view(request, pk):
     question = get_object_or_404(Question, pk=pk)
     answers_qs = question.answers.select_related("user").order_by("-created_at")
