@@ -1,4 +1,5 @@
 from apps.questions.models import Question
+from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from apps.answers.forms import AnswerForm
 from django.contrib import messages
@@ -10,7 +11,9 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def home_view(request):
-    questions = Question.objects.all().order_by("-created_at")
+    questions = Question.objects.annotate(answer_count=Count("answers")).order_by(
+        "-created_at"
+    )
 
     # PAGINATE
     paginator = Paginator(questions, 10)  # show 10 questions per page
@@ -24,6 +27,7 @@ def home_view(request):
 def question_detail_view(request, pk):
     question = get_object_or_404(Question, pk=pk)
     answers_qs = question.answers.select_related("user").order_by("-created_at")
+    answer_count = question.answers.count()
 
     # PAGINATE
     paginator = Paginator(answers_qs, 10)  # show 10 answers per page
@@ -45,7 +49,12 @@ def question_detail_view(request, pk):
     return render(
         request,
         "questions/question_detail.html",
-        {"question": question, "answers": answers, "form": form},
+        {
+            "question": question,
+            "answers": answers,
+            "form": form,
+            "answer_count": answer_count,
+        },
     )
 
 

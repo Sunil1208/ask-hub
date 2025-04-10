@@ -16,9 +16,12 @@
                 <p class="card-text text-muted">
                     {{ q.description|truncatewords:30 }}
                 </p>
-                <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex justify-content-between align-items-center mt-3">                    
                     <small class="text-muted">
                         Asked by <strong>{{ q.user.username }}</strong> • {{ q.created_at|naturaltime }}
+                    </small>
+                    <small class="text-muted">
+                        {{ q.answer_count }} answer{{ q.answer_count|pluralize }}
                     </small>
                     <a href="{% url 'question_detail' q.id %}" class="btn btn-sm btn-outline-primary">View Answers</a>
                 </div>
